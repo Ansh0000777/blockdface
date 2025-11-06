@@ -30,7 +30,8 @@
     "eject": "react-scripts eject",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js",
-    "node": "hardhat node"
+    "node": "hardhat node",
+    "setup:models": "node scripts/setup-models.js"
   },
   "eslintConfig": {
     "extends": [
