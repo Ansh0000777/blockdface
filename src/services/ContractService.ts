@@ -665,39 +665,32 @@ class ContractService {
             /ethereum|web3/i.test(navigator.userAgent));
   }
 
-  // Get recommended browser information
+  // Get recommended browser information using device compatibility utility
   static getBrowserInfo(): {
     supported: boolean;
     recommendation: string;
     browserName: string;
+    deviceType: string;
+    compatibilityScore: number;
   } {
-    const userAgent = navigator.userAgent;
-    let browserName = 'Unknown';
-    let recommendation = '';
+    const deviceCompatibility = require('../utils/deviceCompatibility').default;
+    const deviceInfo = deviceCompatibility.getDeviceInfo();
+    const isCompatible = deviceCompatibility.isCompatible();
+    const compatibilityScore = deviceCompatibility.getCompatibilityScore();
 
-    if (userAgent.includes('Chrome')) {
-      browserName = 'Chrome';
-      recommendation = 'Chrome is fully supported with MetaMask extension.';
-    } else if (userAgent.includes('Firefox')) {
-      browserName = 'Firefox';
-      recommendation = 'Firefox is supported with MetaMask extension.';
-    } else if (userAgent.includes('Safari')) {
-      browserName = 'Safari';
-      recommendation = 'Safari is supported with MetaMask extension or Coinbase Wallet app.';
-    } else if (userAgent.includes('Edge')) {
-      browserName = 'Edge';
-      recommendation = 'Edge is supported with built-in crypto wallet or MetaMask extension.';
+    let recommendation = '';
+    if (isCompatible) {
+      recommendation = deviceCompatibility.getConnectionInstructions();
     } else {
-      browserName = 'Mobile Browser';
-      recommendation = 'For mobile devices, we recommend using MetaMask mobile app or Trust Wallet.';
+      recommendation = 'Your device has limited Web3 support. Consider using a different browser or device.';
     }
 
-    const supported = this.isWeb3Supported();
-
     return {
-      supported,
-      recommendation: supported ? recommendation : 'Please install MetaMask or use a Web3-compatible browser.',
-      browserName
+      supported: isCompatible && this.isWeb3Supported(),
+      recommendation,
+      browserName: deviceInfo.browser,
+      deviceType: deviceInfo.type,
+      compatibilityScore
     };
   }
 }
