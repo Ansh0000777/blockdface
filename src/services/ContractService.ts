@@ -1,7 +1,7 @@
-import Web3 from 'web3';
 import { ethers } from 'ethers';
+import detectEthereumProvider from '@metamask/detect-provider';
 
-// Contract ABI (will be loaded from compiled contract)
+// Contract ABI - Updated for better compatibility
 const CONTRACT_ABI = [
   {
     "inputs": [],
@@ -272,27 +272,41 @@ const CONTRACT_ABI = [
   }
 ];
 
+interface WalletInfo {
+  address: string;
+  balance: string;
+  chainId: string;
+  networkName: string;
+}
+
 class ContractService {
-  private web3: Web3 | null = null;
-  private contract: any = null;
+  private provider: ethers.BrowserProvider | null = null;
+  private signer: ethers.JsonRpcSigner | null = null;
+  private contract: ethers.Contract | null = null;
   private contractAddress: string = '';
   private account: string = '';
 
   constructor() {
-    this.initializeWeb3();
+    this.initializeProvider();
   }
 
-  private async initializeWeb3() {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        this.web3 = new Web3(window.ethereum);
+  private async initializeProvider() {
+    try {
+      // Try to detect provider with better device compatibility
+      const detectedProvider = await detectEthereumProvider({
+        mustBeMetaMask: false,
+        silent: true,
+        timeout: 3000
+      });
+
+      if (detectedProvider) {
+        this.provider = new ethers.BrowserProvider(detectedProvider as any);
         await this.loadContract();
-      } catch (error) {
-        console.error('Failed to initialize Web3:', error);
+      } else {
+        console.warn('No Ethereum provider detected. Please install MetaMask or use a Web3-enabled browser.');
       }
-    } else {
-      console.error('MetaMask is not installed');
+    } catch (error) {
+      console.error('Failed to initialize provider:', error);
     }
   }
 
@@ -303,17 +317,12 @@ class ContractService {
       if (response.ok) {
         const contractInfo = await response.json();
         this.contractAddress = contractInfo.address;
-        this.contract = new this.web3!.eth.Contract(contractInfo.abi || CONTRACT_ABI, this.contractAddress);
+        this.contract = new ethers.Contract(this.contractAddress, CONTRACT_ABI, this.signer);
       } else {
         // Fallback to hardcoded address for development
         this.contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3';
-        this.contract = new this.web3!.eth.Contract(CONTRACT_ABI, this.contractAddress);
+        this.contract = new ethers.Contract(this.contractAddress, CONTRACT_ABI, this.signer);
       }
-
-      // Get current account
-      const accounts = await this.web3!.eth.getAccounts();
-      this.account = accounts[0] || '';
-
     } catch (error) {
       console.error('Failed to load contract:', error);
     }
@@ -321,15 +330,60 @@ class ContractService {
 
   async connectWallet(): Promise<string | null> {
     try {
-      if (typeof window !== 'undefined' && window.ethereum) {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const accounts = await this.web3!.eth.getAccounts();
-        this.account = accounts[0] || '';
-        return this.account;
+      if (!this.provider) {
+        // Try to initialize provider if not available
+        await this.initializeProvider();
+        if (!this.provider) {
+          throw new Error('No Web3 provider available. Please install MetaMask or use a Web3-enabled browser.');
+        }
       }
-      return null;
-    } catch (error) {
+
+      // Request account access with better error handling
+      try {
+        const accounts = await this.provider.send('eth_requestAccounts', []);
+        if (accounts.length === 0) {
+          throw new Error('No accounts found');
+        }
+
+        this.account = accounts[0];
+        this.signer = await this.provider.getSigner();
+
+        // Reload contract with signer
+        await this.loadContract();
+
+        return this.account;
+      } catch (error: any) {
+        if (error.code === 4001) {
+          throw new Error('User rejected the connection request. Please try again.');
+        } else if (error.code === -32002) {
+          throw new Error('Please check your MetaMask extension for pending connection requests.');
+        } else {
+          throw new Error('Failed to connect wallet: ' + error.message);
+        }
+      }
+    } catch (error: any) {
       console.error('Failed to connect wallet:', error);
+      throw error;
+    }
+  }
+
+  async getWalletInfo(): Promise<WalletInfo | null> {
+    try {
+      if (!this.provider || !this.account) {
+        return null;
+      }
+
+      const balance = await this.provider.getBalance(this.account);
+      const network = await this.provider.getNetwork();
+
+      return {
+        address: this.account,
+        balance: ethers.formatEther(balance),
+        chainId: network.chainId.toString(),
+        networkName: network.name || 'Unknown'
+      };
+    } catch (error) {
+      console.error('Failed to get wallet info:', error);
       return null;
     }
   }
@@ -337,7 +391,8 @@ class ContractService {
   async isOwner(): Promise<boolean> {
     try {
       if (!this.contract || !this.account) return false;
-      const owner = await this.contract.methods.owner().call();
+
+      const owner = await this.contract.owner();
       return owner.toLowerCase() === this.account.toLowerCase();
     } catch (error) {
       console.error('Failed to check ownership:', error);
@@ -346,78 +401,124 @@ class ContractService {
   }
 
   // Admin functions
-  async addCandidate(name: string): Promise<string | null> {
+  async addCandidate(name: string): Promise<string> {
     try {
-      if (!this.contract || !this.account) throw new Error('Contract not initialized');
+      if (!this.contract || !this.signer) {
+        throw new Error('Contract not initialized or wallet not connected');
+      }
 
-      const result = await this.contract.methods.addCandidate(name).send({
-        from: this.account,
-        gas: 200000
-      });
+      const contractWithSigner = this.contract.connect(this.signer);
+      const tx = await contractWithSigner.addCandidate(name);
 
-      return result.transactionHash;
+      // Wait for transaction to be mined
+      const receipt = await tx.wait();
+
+      if (receipt?.hash) {
+        return receipt.hash;
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (error: any) {
       console.error('Failed to add candidate:', error);
-      throw error;
+      if (error.code === 4001) {
+        throw new Error('Transaction rejected by user');
+      } else if (error.code === -32603) {
+        throw new Error('Insufficient funds for transaction');
+      } else {
+        throw new Error('Failed to add candidate: ' + (error.message || error.reason));
+      }
     }
   }
 
-  async removeCandidate(candidateId: number): Promise<string | null> {
+  async removeCandidate(candidateId: number): Promise<string> {
     try {
-      if (!this.contract || !this.account) throw new Error('Contract not initialized');
+      if (!this.contract || !this.signer) {
+        throw new Error('Contract not initialized or wallet not connected');
+      }
 
-      const result = await this.contract.methods.removeCandidate(candidateId).send({
-        from: this.account,
-        gas: 200000
-      });
+      const contractWithSigner = this.contract.connect(this.signer);
+      const tx = await contractWithSigner.removeCandidate(candidateId);
 
-      return result.transactionHash;
+      const receipt = await tx.wait();
+
+      if (receipt?.hash) {
+        return receipt.hash;
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (error: any) {
       console.error('Failed to remove candidate:', error);
-      throw error;
+      if (error.code === 4001) {
+        throw new Error('Transaction rejected by user');
+      } else {
+        throw new Error('Failed to remove candidate: ' + (error.message || error.reason));
+      }
     }
   }
 
-  async setVotingPeriod(startTime: number, endTime: number): Promise<string | null> {
+  async setVotingPeriod(startTime: number, endTime: number): Promise<string> {
     try {
-      if (!this.contract || !this.account) throw new Error('Contract not initialized');
+      if (!this.contract || !this.signer) {
+        throw new Error('Contract not initialized or wallet not connected');
+      }
 
-      const result = await this.contract.methods.setVotingPeriod(startTime, endTime).send({
-        from: this.account,
-        gas: 200000
-      });
+      const contractWithSigner = this.contract.connect(this.signer);
+      const tx = await contractWithSigner.setVotingPeriod(startTime, endTime);
 
-      return result.transactionHash;
+      const receipt = await tx.wait();
+
+      if (receipt?.hash) {
+        return receipt.hash;
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (error: any) {
       console.error('Failed to set voting period:', error);
-      throw error;
+      if (error.code === 4001) {
+        throw new Error('Transaction rejected by user');
+      } else {
+        throw new Error('Failed to set voting period: ' + (error.message || error.reason));
+      }
     }
   }
 
   // Voter functions
-  async vote(candidateId: number): Promise<string | null> {
+  async vote(candidateId: number): Promise<string> {
     try {
-      if (!this.contract || !this.account) throw new Error('Contract not initialized');
+      if (!this.contract || !this.signer) {
+        throw new Error('Contract not initialized or wallet not connected');
+      }
 
-      const result = await this.contract.methods.vote(candidateId).send({
-        from: this.account,
-        gas: 200000
-      });
+      const contractWithSigner = this.contract.connect(this.signer);
+      const tx = await contractWithSigner.vote(candidateId);
 
-      return result.transactionHash;
+      const receipt = await tx.wait();
+
+      if (receipt?.hash) {
+        return receipt.hash;
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (error: any) {
       console.error('Failed to vote:', error);
-      throw error;
+      if (error.code === 4001) {
+        throw new Error('Transaction rejected by user');
+      } else if (error.message?.includes('already voted')) {
+        throw new Error('You have already voted');
+      } else {
+        throw new Error('Failed to vote: ' + (error.message || error.reason));
+      }
     }
   }
 
   async hasVoted(address?: string): Promise<boolean> {
     try {
       if (!this.contract) return false;
+
       const voterAddress = address || this.account;
       if (!voterAddress) return false;
 
-      const result = await this.contract.methods.hasVoted(voterAddress).call();
+      const result = await this.contract.hasVoted(voterAddress);
       return result;
     } catch (error) {
       console.error('Failed to check if voted:', error);
@@ -430,8 +531,11 @@ class ContractService {
     try {
       if (!this.contract) return { ids: [], names: [] };
 
-      const result = await this.contract.methods.getCandidates().call();
-      return { ids: result[0], names: result[1] };
+      const result = await this.contract.getCandidates();
+      return {
+        ids: result[0].map((id: any) => Number(id)),
+        names: result[1]
+      };
     } catch (error) {
       console.error('Failed to get candidates:', error);
       return { ids: [], names: [] };
@@ -442,8 +546,12 @@ class ContractService {
     try {
       if (!this.contract) return { ids: [], names: [], votes: [] };
 
-      const result = await this.contract.methods.getResults().call();
-      return { ids: result[0], names: result[1], votes: result[2] };
+      const result = await this.contract.getResults();
+      return {
+        ids: result[0].map((id: any) => Number(id)),
+        names: result[1],
+        votes: result[2].map((vote: any) => Number(vote))
+      };
     } catch (error) {
       console.error('Failed to get results:', error);
       return { ids: [], names: [], votes: [] };
@@ -454,7 +562,7 @@ class ContractService {
     try {
       if (!this.contract) return 'No candidates';
 
-      const result = await this.contract.methods.getWinner().call();
+      const result = await this.contract.getWinner();
       return result;
     } catch (error) {
       console.error('Failed to get winner:', error);
@@ -466,16 +574,25 @@ class ContractService {
     try {
       if (!this.contract) return { startTime: 0, endTime: 0, isActive: false };
 
-      const result = await this.contract.methods.getVotingPeriod().call();
-      return { startTime: result[0], endTime: result[1], isActive: result[2] };
+      const result = await this.contract.getVotingPeriod();
+      return {
+        startTime: Number(result[0]),
+        endTime: Number(result[1]),
+        isActive: result[2]
+      };
     } catch (error) {
       console.error('Failed to get voting period:', error);
       return { startTime: 0, endTime: 0, isActive: false };
     }
   }
 
+  // Utility functions
   isReady(): boolean {
-    return this.contract !== null && this.web3 !== null;
+    return this.contract !== null && this.provider !== null;
+  }
+
+  isConnected(): boolean {
+    return this.account !== '' && this.signer !== null;
   }
 
   getAccount(): string {
@@ -485,11 +602,103 @@ class ContractService {
   getContractAddress(): string {
     return this.contractAddress;
   }
+
+  async getNetworkInfo(): Promise<{ chainId: string, name: string } | null> {
+    try {
+      if (!this.provider) return null;
+
+      const network = await this.provider.getNetwork();
+      return {
+        chainId: network.chainId.toString(),
+        name: network.name || 'Unknown'
+      };
+    } catch (error) {
+      console.error('Failed to get network info:', error);
+      return null;
+    }
+  }
+
+  async switchNetwork(chainId: string): Promise<boolean> {
+    try {
+      if (!this.provider) return false;
+
+      await this.provider.send('wallet_switchEthereumChain', [
+        { chainId: `0x${parseInt(chainId).toString(16)}` }
+      ]);
+
+      return true;
+    } catch (error: any) {
+      console.error('Failed to switch network:', error);
+      if (error.code === 4902) {
+        throw new Error('Network not found in MetaMask. Please add it manually.');
+      }
+      return false;
+    }
+  }
+
+  async addNetwork(networkConfig: {
+    chainId: string;
+    chainName: string;
+    rpcUrls: string[];
+    nativeCurrency: {
+      name: string;
+      symbol: string;
+      decimals: number;
+    };
+  }): Promise<boolean> {
+    try {
+      if (!this.provider) return false;
+
+      await this.provider.send('wallet_addEthereumChain', [networkConfig]);
+      return true;
+    } catch (error) {
+      console.error('Failed to add network:', error);
+      return false;
+    }
+  }
+
+  // Check if the environment supports Web3
+  static isWeb3Supported(): boolean {
+    return typeof window !== 'undefined' &&
+           (typeof window.ethereum !== 'undefined' ||
+            typeof window.web3 !== 'undefined' ||
+            /ethereum|web3/i.test(navigator.userAgent));
+  }
+
+  // Get recommended browser information using device compatibility utility
+  static getBrowserInfo(): {
+    supported: boolean;
+    recommendation: string;
+    browserName: string;
+    deviceType: string;
+    compatibilityScore: number;
+  } {
+    const deviceCompatibility = require('../utils/deviceCompatibility').default;
+    const deviceInfo = deviceCompatibility.getDeviceInfo();
+    const isCompatible = deviceCompatibility.isCompatible();
+    const compatibilityScore = deviceCompatibility.getCompatibilityScore();
+
+    let recommendation = '';
+    if (isCompatible) {
+      recommendation = deviceCompatibility.getConnectionInstructions();
+    } else {
+      recommendation = 'Your device has limited Web3 support. Consider using a different browser or device.';
+    }
+
+    return {
+      supported: isCompatible && this.isWeb3Supported(),
+      recommendation,
+      browserName: deviceInfo.browser,
+      deviceType: deviceInfo.type,
+      compatibilityScore
+    };
+  }
 }
 
 declare global {
   interface Window {
-    ethereum: any;
+    ethereum?: any;
+    web3?: any;
   }
 }
 
