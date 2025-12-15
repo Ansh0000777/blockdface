@@ -99,63 +99,64 @@ npm run setup:models
 - Smart contract-based access control
 - MetaMask transaction confirmations
 - Time-locked voting periods
-- 
+
 ## 📸 Project Screenshots
 
 ### 🧑 Face Authentication Interface (Privacy Preserved)
-The system performs facial authentication locally to verify voter identity before allowing access to the voting interface.
-User privacy is preserved, and facial data is never stored or transmitted.
+The system performs face authentication locally to verify voter identity before granting access to the voting interface.
+User privacy is strictly preserved — facial data is processed on-device and is neither stored nor transmitted.
 
 <img width="100%" alt="Face Authentication Interface" src="https://github.com/user-attachments/assets/5de4ef65-9865-4889-a9a1-6261f6d522a9" />
 
 ---
 
 ### 🛠 Admin Dashboard
-The admin dashboard allows election administrators to manage candidates, configure voting periods,
-and monitor the overall election status in real time.
+The admin dashboard enables election administrators to manage candidates, configure voting periods,
+and monitor the overall election lifecycle in real time.
 
 <img width="100%" alt="Admin Dashboard" src="https://github.com/user-attachments/assets/cced3666-b7cf-4e22-bc29-7c0ec6db8248" />
 
 ---
 
 ### 🗳 Voting Interface
-Authenticated voters are presented with a simple and intuitive voting interface.
-Each voter can select only one candidate and proceed to cast their vote securely.
+Once authenticated, voters are presented with a clean and intuitive voting interface.
+Each voter is allowed to select exactly one candidate and submit their vote securely.
 
 <img width="100%" alt="Voting Interface" src="https://github.com/user-attachments/assets/9375c750-eb7d-4753-b479-248a034458a0" />
 
 ---
 
 ### 🔐 Blockchain Transaction (MetaMask)
-Votes are recorded on the Ethereum blockchain using MetaMask.
-This ensures transparency, immutability, and tamper-resistance of the voting process.
+Votes are recorded on the Ethereum blockchain via MetaMask.
+This guarantees transparency, immutability, and tamper-resistance of the voting process.
 
 <img width="100%" alt="MetaMask Transaction" src="https://github.com/user-attachments/assets/d49a6906-338c-4a3a-a149-5b3343247fd9" />
 
 ---
 
 ## 🗳️ Vote Confirmation
-After successful face authentication and blockchain verification, the vote is permanently recorded.
-The system prevents duplicate voting and confirms successful submission to the voter.
+After successful face authentication and blockchain verification, the vote is permanently recorded on-chain.
+The system prevents duplicate voting and displays a confirmation message to the voter.
 
-<img width="100%" alt="Vote Confirmed" src="https://github.com/user-attachments/assets/3541697d-f26d-4468-a19a-1a2c4809d9c8" />
+<img width="100%" alt="Vote Confirmation" src="https://github.com/user-attachments/assets/3541697d-f26d-4468-a19a-1a2c4809d9c8" />
 
 ---
 
 ## 🛠️ Admin Panel – Candidate Vote Tracking
-The admin panel displays live vote counts for each candidate.
-Vote totals are fetched directly from the blockchain, ensuring accuracy and transparency.
+The admin panel provides real-time visibility into candidate vote counts.
+All vote totals are fetched directly from the blockchain, ensuring accuracy and full transparency.
 
 <img width="500" alt="Candidate Vote Tracking" src="https://github.com/user-attachments/assets/87fb9482-ef34-47b9-ae52-480be6bba7d5" />
 
 ---
 
 ## 🏆 Election Results & Winner Declaration
-Once the voting period ends, results are computed from on-chain data.
-The winning candidate is declared in a transparent and verifiable manner.
+Once the voting period concludes, election results are computed entirely from on-chain data.
+The winning candidate is declared in a transparent, verifiable, and tamper-proof manner.
 
 <img width="500" alt="Election Results" src="https://github.com/user-attachments/assets/1ca76b87-6261-426d-97d1-5adaf91ae4f3" />
 
-### License
+---
 
-MIT License
+## 📜 License
+This project is licensed under the MIT License.
