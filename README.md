@@ -103,19 +103,19 @@ npm run setup:models
 ## 📸 Project Screenshots
 
 ### 🧑 Face Authentication Interface (Privacy Preserved)
-![Face Auth](screenshots/Screenshot 2025-11-12 061409.png)
+![Face Auth](screenshots/Screenshot%202025-11-12 061409.png)
 
 ### 🛠 Admin Dashboard
-![Admin Dashboard](screenshots/Screenshot 2025-11-12 061511.png)
+![Admin Dashboard](screenshots/Screenshot%202025-11-12 061511.png)
 
 ### 🗳 Voting Interface
-![Voting Screen](screenshots/Screenshot 2025-11-12 061646.png)
+![Voting Screen](screenshots/Screenshot%202025-11-12 061646.png)
 
 ### 🔐 Blockchain Transaction (MetaMask)
-![MetaMask](screenshots/Screenshot 2025-11-12 061742.png)
+![MetaMask](screenshots/Screenshot 2025-11-12%20061742.png)
 
 ### 🏆 Election Results
-![Results](screenshots/Screenshot 2025-11-12 061911.png)
+![Results](screenshots/Screenshot 2025-11-12%20061911.png)
 
 ### License
 
