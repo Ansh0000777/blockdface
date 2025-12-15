@@ -101,13 +101,60 @@ npm run setup:models
 - Time-locked voting periods
 - 
 ## 📸 Project Screenshots
-<img width="1919" height="921" alt="Screenshot 2025-11-12 061325" src="https://github.com/user-attachments/assets/c9ac15b9-4f52-4e4b-8a58-ea61d76edb0e" />
-<img width="505" height="360" alt="Screenshot 2025-11-12 061911" src="https://github.com/user-attachments/assets/ba6ab4a7-1dba-44ac-ba70-2373d60950eb" />
-<img width="504" height="477" alt="Screenshot 2025-11-12 061846" src="https://github.com/user-attachments/assets/319c01b5-345e-403a-8cbc-d0dadf302ddc" />
-<img width="1124" height="553" alt="Screenshot 2025-11-12 061749" src="https://github.com/user-attachments/assets/ca8cd47d-6678-4e73-afb8-e8cbd58a21ff" />
-<img width="1048" height="641" alt="Screenshot 2025-11-12 061731" src="https://github.com/user-attachments/assets/8ab8ee5c-07a5-4997-b64b-4b5eb13387c5" />
-<img width="1085" height="915" alt="Screenshot 2025-11-12 061604" src="https://github.com/user-attachments/assets/244e30ab-886e-4421-aff8-e01b25ba3621" />
-<img width="1917" height="918" alt="Screenshot 2025-11-12 061409" src="https://github.com/user-attachments/assets/dcd891d7-6674-466f-aac9-8eb1e951964e" />
+
+### 🧑 Face Authentication Interface (Privacy Preserved)
+The system performs facial authentication locally to verify voter identity before allowing access to the voting interface.
+User privacy is preserved, and facial data is never stored or transmitted.
+
+<img width="100%" alt="Face Authentication Interface" src="https://github.com/user-attachments/assets/5de4ef65-9865-4889-a9a1-6261f6d522a9" />
+
+---
+
+### 🛠 Admin Dashboard
+The admin dashboard allows election administrators to manage candidates, configure voting periods,
+and monitor the overall election status in real time.
+
+<img width="100%" alt="Admin Dashboard" src="https://github.com/user-attachments/assets/cced3666-b7cf-4e22-bc29-7c0ec6db8248" />
+
+---
+
+### 🗳 Voting Interface
+Authenticated voters are presented with a simple and intuitive voting interface.
+Each voter can select only one candidate and proceed to cast their vote securely.
+
+<img width="100%" alt="Voting Interface" src="https://github.com/user-attachments/assets/9375c750-eb7d-4753-b479-248a034458a0" />
+
+---
+
+### 🔐 Blockchain Transaction (MetaMask)
+Votes are recorded on the Ethereum blockchain using MetaMask.
+This ensures transparency, immutability, and tamper-resistance of the voting process.
+
+<img width="100%" alt="MetaMask Transaction" src="https://github.com/user-attachments/assets/d49a6906-338c-4a3a-a149-5b3343247fd9" />
+
+---
+
+## 🗳️ Vote Confirmation
+After successful face authentication and blockchain verification, the vote is permanently recorded.
+The system prevents duplicate voting and confirms successful submission to the voter.
+
+<img width="100%" alt="Vote Confirmed" src="https://github.com/user-attachments/assets/3541697d-f26d-4468-a19a-1a2c4809d9c8" />
+
+---
+
+## 🛠️ Admin Panel – Candidate Vote Tracking
+The admin panel displays live vote counts for each candidate.
+Vote totals are fetched directly from the blockchain, ensuring accuracy and transparency.
+
+<img width="500" alt="Candidate Vote Tracking" src="https://github.com/user-attachments/assets/87fb9482-ef34-47b9-ae52-480be6bba7d5" />
+
+---
+
+## 🏆 Election Results & Winner Declaration
+Once the voting period ends, results are computed from on-chain data.
+The winning candidate is declared in a transparent and verifiable manner.
+
+<img width="500" alt="Election Results" src="https://github.com/user-attachments/assets/1ca76b87-6261-426d-97d1-5adaf91ae4f3" />
 
 ### License
 
