@@ -99,6 +99,23 @@ npm run setup:models
 - Smart contract-based access control
 - MetaMask transaction confirmations
 - Time-locked voting periods
+- 
+## 📸 Project Screenshots
+
+### 🧑 Face Authentication Interface (Privacy Preserved)
+![Face Auth](screenshots/Screenshot 2025-11-12 061409.png)
+
+### 🛠 Admin Dashboard
+![Admin Dashboard](screenshots/Screenshot 2025-11-12 061511.png)
+
+### 🗳 Voting Interface
+![Voting Screen](screenshots/Screenshot 2025-11-12 061646.png)
+
+### 🔐 Blockchain Transaction (MetaMask)
+![MetaMask](screenshots/Screenshot 2025-11-12 061742.png)
+
+### 🏆 Election Results
+![Results](screenshots/Screenshot 2025-11-12 061911.png)
 
 ### License
 
