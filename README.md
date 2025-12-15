@@ -101,21 +101,13 @@ npm run setup:models
 - Time-locked voting periods
 - 
 ## 📸 Project Screenshots
-
-### 🧑 Face Authentication Interface (Privacy Preserved)
-![Face Auth](screenshots/Screenshot%202025-11-12061409.png)
-
-### 🛠 Admin Dashboard
-![Admin Dashboard](screenshots/Screenshot%202025-11-12061511.png)
-
-### 🗳 Voting Interface
-![Voting Screen](screenshots/Screenshot%202025-11-12061646.png)
-
-### 🔐 Blockchain Transaction (MetaMask)
-![MetaMask](screenshots/Screenshot 2025-11-12%20061742.png)
-
-### 🏆 Election Results
-![Results](screenshots/Screenshot 2025-11-12%20061911.png)
+<img width="1919" height="921" alt="Screenshot 2025-11-12 061325" src="https://github.com/user-attachments/assets/c9ac15b9-4f52-4e4b-8a58-ea61d76edb0e" />
+<img width="505" height="360" alt="Screenshot 2025-11-12 061911" src="https://github.com/user-attachments/assets/ba6ab4a7-1dba-44ac-ba70-2373d60950eb" />
+<img width="504" height="477" alt="Screenshot 2025-11-12 061846" src="https://github.com/user-attachments/assets/319c01b5-345e-403a-8cbc-d0dadf302ddc" />
+<img width="1124" height="553" alt="Screenshot 2025-11-12 061749" src="https://github.com/user-attachments/assets/ca8cd47d-6678-4e73-afb8-e8cbd58a21ff" />
+<img width="1048" height="641" alt="Screenshot 2025-11-12 061731" src="https://github.com/user-attachments/assets/8ab8ee5c-07a5-4997-b64b-4b5eb13387c5" />
+<img width="1085" height="915" alt="Screenshot 2025-11-12 061604" src="https://github.com/user-attachments/assets/244e30ab-886e-4421-aff8-e01b25ba3621" />
+<img width="1917" height="918" alt="Screenshot 2025-11-12 061409" src="https://github.com/user-attachments/assets/dcd891d7-6674-466f-aac9-8eb1e951964e" />
 
 ### License
 
